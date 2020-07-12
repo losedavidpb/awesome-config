@@ -1,0 +1,1 @@
+# cosa-awesome-config
