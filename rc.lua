@@ -14,6 +14,7 @@ local hotkeys_popup         = require("awful.hotkeys_popup").widget
 require("awful.hotkeys_popup.keys.vim")
 require("awful.autofocus")
 require("awful.rules")
+require("volume")
 --- }}}
 
 -- {{{ Error handling
@@ -181,7 +182,41 @@ local tempwidget = lain.widget.temp {
     widget:set_text(" "..coretemp_now.."°C ")
   end
 }
+
+local volumewidget = lain.widget.alsabar {
+  channel = "Master",
+  togglechannel = nil,
+  followtag = true,
+  width = 40,
+  margins = 3,
+  colors = {
+  	background = "#171616",
+  	mute = "#c5bdbd",
+  	unmute = "#c5bdbd"
+  }
+
+}
 -- }}}
+
+-- Buttons for volume widget
+volumewidget.bar:buttons(awful.util.table.join(
+    awful.button({}, 1, function() -- left click to set max volume level
+        os.execute(string.format("%s set %s 100%%", volumewidget.cmd, volumewidget.channel))
+        volumewidget.update()
+    end),
+    awful.button({}, 3, function() -- right click for mute/unmute mode
+        os.execute(string.format("%s set %s 0%%", volumewidget.cmd, volumewidget.channel))
+        volumewidget.update()
+    end),
+    awful.button({}, 4, function() -- scroll up to increase volume level
+        os.execute(string.format("%s set %s 1%%+", volumewidget.cmd, volumewidget.channel))
+        volumewidget.update()
+    end),
+    awful.button({}, 5, function() -- scroll down to decrease volume level
+        os.execute(string.format("%s set %s 1%%-", volumewidget.cmd, volumewidget.channel))
+        volumewidget.update()
+    end)
+))
 
 -- Keyboard map indicator and switcher
 local mykeyboardlayout = awful.widget.keyboardlayout {
@@ -383,6 +418,8 @@ awful.screen.connect_for_each_screen(function(s)
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             wibox.widget.systray(),
+            wibox.container.background(volumewidget.bar),
+            linesep.widget,
             wibox.container.background(mykeyboardlayout.widget, beautiful.bg_normal),
             linesep.widget,
             wibox.container.background(memicon, beautiful.bg_normal),
@@ -521,7 +558,15 @@ globalkeys = gears.table.join(
 
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"})
+              {description = "show the menubar", group = "launcher"}),
+
+    -- ALSA Volume
+    awful.key({ }, "XF86AudioRaiseVolume", function ()
+      awful.util.spawn("amixer set Master 9%+", false) end),
+    awful.key({ }, "XF86AudioLowerVolume", function ()
+      awful.util.spawn("amixer set Master 9%-", false) end),
+    awful.key({ }, "XF86AudioMute", function ()
+      awful.util.spawn("amixer sset Master toggle", false) end)
 )
 
 clientkeys = gears.table.join(
