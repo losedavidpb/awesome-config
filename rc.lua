@@ -14,7 +14,6 @@ local hotkeys_popup         = require("awful.hotkeys_popup").widget
 require("awful.hotkeys_popup.keys.vim")
 require("awful.autofocus")
 require("awful.rules")
-require("volume")
 --- }}}
 
 -- {{{ Error handling
@@ -160,11 +159,6 @@ local mycalendar = lain.widget.cal {
 }
 
 -- {{{ System status: Memory, CPU, Core temperature and ALSA volume
-local memicon = wibox.widget.imagebox(beautiful.widget_mem)
-local cpuicon = wibox.widget.imagebox(beautiful.widget_cpu)
-local tempicon = wibox.widget.imagebox(beautiful.widget_temp)
-local volicon = wibox.widget.imagebox(beautiful.widget_vol)
-
 local memwidget = lain.widget.mem {
   settings = function()
     widget:set_text(" "..mem_now.used.."MB ")
@@ -184,8 +178,6 @@ local tempwidget = lain.widget.temp {
 }
 
 local volumewidget = lain.widget.alsabar {
-  channel = "Master",
-  togglechannel = nil,
   followtag = true,
   width = 40,
   margins = 3,
@@ -422,13 +414,10 @@ awful.screen.connect_for_each_screen(function(s)
             linesep.widget,
             wibox.container.background(mykeyboardlayout.widget, beautiful.bg_normal),
             linesep.widget,
-            wibox.container.background(memicon, beautiful.bg_normal),
             wibox.container.background(memwidget.widget, beautiful.bg_normal),
             spacesep.widget,
-            wibox.container.background(cpuicon, beautiful.bg_normal),
             wibox.container.background(cpuwidget.widget, beautiful.bg_normal),
             spacesep.widget,
-            wibox.container.background(tempicon, beautiful.bg_normal),
             wibox.container.background(tempwidget.widget, beautiful.bg_normal),
             linesep.widget,
             wibox.container.background(mytextclock, beautiful.bg_normal),
