@@ -1,4 +1,4 @@
--- @author David Parreño Barbuzano
+-- @author davidpb-cosa
 
 --- {{{ Useful Awesome libraries
 local gears                 = require("gears")
@@ -8,9 +8,14 @@ local wibox                 = require("wibox")
 local beautiful             = require("beautiful")
 local menubar               = require("menubar")
 local hotkeys_popup         = require("awful.hotkeys_popup").widget
+local naughty               = require("naughty")
 
 require("awful.autofocus")
 require("awful.rules")
+
+local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
+local table, tostring, tonumber, type = table, tostring, tonumber, type
+local ipairs, string, os = ipairs, string, os
 --- }}}
 
 -- {{{ Global functions
@@ -77,6 +82,23 @@ function border_adjust(c)
 end
 -- }}}
 
+-- Naughty presets
+naughty.config.defaults.timeout       = 5
+naughty.config.defaults.screen        = 1
+naughty.config.defaults.position      = "top_right"
+naughty.config.defaults.margin        = 8
+naughty.config.defaults.gap           = 1
+naughty.config.defaults.ontop         = true
+naughty.config.defaults.font          = "Meslo LGS Regular 10"
+naughty.config.defaults.icon          = nil
+naughty.config.defaults.icon_size     = 32
+naughty.config.defaults.fg            = beautiful.fg_tooltip
+naughty.config.defaults.bg            = beautiful.bg_tooltip
+naughty.config.defaults.border_color  = beautiful.border_tooltip
+naughty.config.defaults.border_width  = 2
+naughty.config.defaults.hover_timeout = nil
+
+-- Layout lain settings
 lain.layout.termfair.nmaster           = 3
 lain.layout.termfair.ncol              = 1
 lain.layout.termfair.center.nmaster    = 3
@@ -88,7 +110,13 @@ lain.layout.cascade.tile.nmaster       = 5
 lain.layout.cascade.tile.ncol          = 2
 
 -- {{{ Variable definitions
-beautiful.init(os.getenv("HOME").."/.config/awesome/themes/cosatheme/theme.lua")
+local themes = {
+    "dark-purple-23"      -- 1
+    -- insert new themes here
+}
+
+local chosen_theme = themes[1]
+beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/" .. chosen_theme .. "/theme.lua")
 
 -- Common variables and user variables defined
 local modkey            = "Mod4"
@@ -97,11 +125,13 @@ local altkey            = "Mod1"
 local tagnames          = { "main", "browser", "etc" }
 local awesomelink       = "https://awesomewm.org/doc/api/index.html"
 
+local home              = os.getenv("HOME")
 local browser           = "exo-open --launch WebBrowser --incognito" or "chromium"
 local filemanager       = "exo-open --launch FileManager" or "thunar"
-local terminal          = os.getenv("TERMINAL") or "termite"
+local terminal          = "/usr/bin/termite" or os.getenv("TERMINAL")
 local editor            = os.getenv("EDITOR") or "nano"
 local gui_editor        = "atom" or "mousepad"
+local scrlocker         = "xlock"
 
 local spacesep = wibox.widget {
   opacity = 0,
@@ -171,12 +201,6 @@ local cpuwidget = lain.widget.cpu {
   end
 }
 
-local tempwidget = lain.widget.temp {
-  settings = function()
-    widget:set_text(" "..coretemp_now.."°C ")
-  end
-}
-
 local volumewidget = lain.widget.alsabar {
   followtag = true,
   width = 40,
@@ -188,9 +212,10 @@ local volumewidget = lain.widget.alsabar {
   }
 }
 
-local mytextclock = wibox.widget.textclock("<span> <b>%H:%M</b> </span>")
+local mytextclock = wibox.widget.textclock(
+  "<span> <b>%H:%M</b> </span>")
 
-local mycalendar = lain.widget.cal {
+local mycalendar = lain.widget.calendar {
   attach_to = { mytextclock },
   notification_preset = {
     font = "Monospace 11",
@@ -264,6 +289,8 @@ local tasklist_buttons = gears.table.join(
 screen.connect_signal("property::geometry", set_wallpaper)
 
 awful.screen.connect_for_each_screen(function(s)
+    s.quake = lain.util.quake({ app = awful.util.terminal })
+
     -- Wallpaper
     set_wallpaper(s)
 
@@ -385,7 +412,7 @@ awful.screen.connect_for_each_screen(function(s)
   }
 
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s, height = 28 })
+    s.mywibox = awful.wibar({ position = "top", screen = s, height = 28, bg = beautiful.panel, fg = beautiful.fg_normal })
 
     -- Add widgets to the wibox
     s.mywibox:setup {
@@ -409,8 +436,6 @@ awful.screen.connect_for_each_screen(function(s)
             spacesep.widget,
             wibox.container.background(cpuwidget.widget, beautiful.bg_normal),
             spacesep.widget,
-            wibox.container.background(tempwidget.widget, beautiful.bg_normal),
-            spacesep.widget,
             wibox.container.background(mytextclock, beautiful.bg_normal),
             spacesep.widget,
             wibox.container.background(s.mylayoutbox, beautiful.bg_normal),
@@ -430,7 +455,10 @@ root.buttons(gears.table.join(
 -- {{{ Key bindings
 globalkeys = gears.table.join(
 
-  -- Pop-up windows and Awesome reload
+  -- Pop-up windows and Awesome reload/quit
+  awful.key(
+    { modkey, "Control" }, "l", function () os.execute(scrlocker) end,
+    {description = "lock screen", group = "hotkeys"}),
   awful.key(
     { modkey, }, "s", hotkeys_popup.show_help,
     {description="show help", group="awesome"}),
@@ -440,6 +468,19 @@ globalkeys = gears.table.join(
   awful.key(
     { modkey, "Control" }, "r", awesome.restart,
     {description = "reload awesome", group = "awesome"}),
+  awful.key(
+    { modkey, "Control"   }, "q", awesome.quit,
+    {description = "quit awesome", group = "awesome"}),
+
+  -- Show/Hide Wibox
+  awful.key(
+    { modkey }, "b", function ()
+      for s in screen do
+        s.mywibox.visible = not s.mywibox.visible
+        if s.mybottomwibox then s.mybottomwibox.visible = not s.mybottomwibox.visible end
+      end
+    end,
+    {description = "toggle wibox", group = "awesome"}),
 
   -- Tags
   awful.key(
@@ -451,6 +492,14 @@ globalkeys = gears.table.join(
   awful.key(
     { modkey, }, "Escape", awful.tag.history.restore,
     {description = "go back", group = "tag"}),
+
+  -- Brightness
+  awful.key(
+    { }, "XF86MonBrightnessUp", function () awful.util.spawn("xbacklight -inc 10") end,
+    {description = "+10%", group = "hotkeys"}),
+  awful.key(
+    { }, "XF86MonBrightnessDown", function () awful.util.spawn("xbacklight -dec 10") end,
+    {description = "-10%", group = "hotkeys"}),
 
   -- Clients
   awful.key(
@@ -485,7 +534,6 @@ globalkeys = gears.table.join(
     { modkey, }, "y", function () awful.spawn(gui_editor) end,
     {description = "open Atom", group = "launcher"}),
 
-
   -- Master layout manipulation
   awful.key(
     { modkey, }, "+", function () awful.tag.incmwfact(0.05) end,
@@ -507,13 +555,34 @@ globalkeys = gears.table.join(
     {description = "decrease the number of columns", group = "layout"}),
   awful.key(
     { modkey, "Shift" }, "space", function () awful.layout.inc(-1) end,
-    {description = "select previous", group = "layout"})
+    {description = "select previous", group = "layout"}),
+
+  -- Prompt and run Lua code
+  awful.key(
+    { altkey }, "r", function () awful.screen.focused().mypromptbox:run() end,
+    {description = "run prompt", group = "launcher"}),
+  awful.key(
+    { altkey }, "l", function ()
+      awful.prompt.run {
+        prompt       = "Run Lua code: ",
+        textbox      = awful.screen.focused().mypromptbox.widget,
+        exe_callback = awful.util.eval,
+        history_path = awful.util.get_cache_dir() .. "/history_eval"
+      }
+    end,
+    {description = "lua execute prompt", group = "awesome"})
 )
 
 clientkeys = gears.table.join(
   awful.key(
+    { modkey, "Shift" }, "m", lain.util.magnify_client,
+    {description = "magnify client", group = "client"}),
+  awful.key(
     { modkey, }, "f", function (c) c.fullscreen = not c.fullscreen c:raise() end,
     {description = "toggle fullscreen", group = "client"}),
+  awful.key(
+    { modkey, }, "space",  awful.client.floating.toggle                     ,
+    {description = "toggle floating", group = "client"}),
   awful.key(
     { modkey, }, "x", function (c) c:kill() end,
     {description = "close", group = "client"}),
@@ -650,9 +719,9 @@ awful.rules.rules = {
       properties = { titlebars_enabled = true }
     },
 
-    -- Set Firefox to always map on the tag named "2" on screen 1.
+    -- Set Chromium to always map on the tag named "2" on screen 1.
     { rule = { class = "Chromium" },
-      properties = { screen = 1, tag = "2" }
+      properties = { screen = 1, tag = "browser" }
     }
 }
 -- }}}
@@ -713,7 +782,7 @@ client.connect_signal("request::titlebars", function(c)
     { -- Right: clasical widget buttons and floating mode
       awful.titlebar.widget.floatingbutton (c),
       awful.titlebar.widget.maximizedbutton(c),
-      awful.titlebar.widget.closebutton(c),
+      awful.titlebar.widget.closebutton    (c),
       layout = wibox.layout.fixed.horizontal()
     },
     layout = wibox.layout.align.horizontal
