@@ -1,5 +1,3 @@
-<img src="https://github.com/davidpb-cosa/cosa-dotfiles/screenshots/logo.png" alt="Logo" align="right" />
-
 # COSA AWESOME CONFIGURATION
 
 ## Requirements
