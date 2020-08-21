@@ -23,8 +23,8 @@ local normal_pink         = "#CC9393"
 --- }}}
 
 -- {{{ Main settings
-theme.wallpaper         = themepath .. "background.jpg"
-theme.font              = "Noto Sans Regular 10"
+theme.wallpaper           = themepath .. "background.jpg"
+theme.font                = "Noto Sans Regular 10"
 
 --- {{{ Colors
 theme.fg_normal     = normal_white
