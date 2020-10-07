@@ -1,4 +1,4 @@
--- @author davidpb-cosa (some files are from pro-dark and zenburn themes)
+-- @author losedavidpb (some files are from pro-dark and zenburn themes)
 -- pro-dark: https://github.com/4ban/awesome-pro
 -- zenburn: https://github.com/awesomeWM/awesome
 
