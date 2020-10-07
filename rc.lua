@@ -1,4 +1,4 @@
--- @author davidpb-cosa
+-- @author losedavidpb
 
 --- {{{ Useful Awesome libraries
 local gears                 = require("gears")
