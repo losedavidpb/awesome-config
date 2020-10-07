@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-# @author davidpb-cosa
+# @author losedavidpb
 
 #  Function that run (only once) processes
 # which spawn with the same name
