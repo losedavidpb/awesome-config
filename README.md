@@ -1,4 +1,4 @@
-# COSA AWESOME CONFIGURATION
+# AWESOME CONFIGURATION
 
 ## Requirements
 
@@ -14,8 +14,8 @@
 ```bash
 mkdir -p ~/.config/awesome/themes
 
-sudo pacman -Syu git
-git clone https://github.com/davidpb-cosa/cosa-awesome-config ~/.config/awesome/ --recursive
+sudo pacman -Syu git  # or other package manager
+git clone https://github.com/losedavidpb/awesome-config ~/.config/awesome/ --recursive
 
 mv ~/.config/awesome/dark-purple-23 ~/.config/awesome/themes/dark-purple-23
 ```
@@ -24,4 +24,4 @@ You can use this with:
 
 ### My personal .files
 
-Cosa dotfiles: https://github.com/davidpb-cosa/cosa-dotfiles
+ArchLinux .files: https://github.com/losedavidpb/arch-dotfiles
