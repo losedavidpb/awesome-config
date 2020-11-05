@@ -1,5 +1,13 @@
+<img src="screenshots/logo.png" align="right" height=150px width=180px />
+
 # AWESOME CONFIGURATION
 
+<a name="screenshots"></a>
+## Screenshots
+
+![wallpaper](screenshots/scrshot-wallpaper.png)
+![general](screenshots/scrshot-general.png)
+![terminal](screenshots/scrshot-terminal.png)
 
 ## Installation
 
